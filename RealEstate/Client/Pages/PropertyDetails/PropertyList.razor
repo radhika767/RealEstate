@@ -1,0 +1,77 @@
+﻿@page "/"
+@page "/propertyList"
+@using Microsoft.AspNetCore.Components.Forms
+@using RealEstate.Shared.DTO.PropertyDetails
+@inject HttpClient httpClient
+@inject NavigationManager navigation
+<h3>Property List</h3>
+
+<a href="/propertyadd" class="btn btn-primary mb-3">Add</a>
+
+@if (isLoading)
+{
+    <div class="text-center">
+        <p>Loading...</p>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Property Id</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Location</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (properties.Any())
+                {
+                    @foreach (var properties in properties)
+                    {
+                        <tr>
+                            <td>@properties.Id</td>
+                            <td>@properties.Title</td>
+                            <td>@properties.Description</td>
+                            <td>@properties.Price.ToString("C")</td>
+                            <td>@properties.Location</td>
+                            <td>
+                                <a href="@($"/propertyedit/{properties.Id}")" class="btn btn-warning btn-sm">Update</a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center">No Properties Available.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+@code {
+    private List<PropertyDTO> properties = new List<PropertyDTO>();
+    private bool isLoading = true;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            properties = await httpClient.GetFromJsonAsync<List<PropertyDTO>>("api/Property/GetAll") ?? new();
+            Console.WriteLine("Load Data");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading Property: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

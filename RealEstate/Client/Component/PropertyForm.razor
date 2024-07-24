@@ -1,0 +1,53 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using RealEstate.Shared.DTO.PropertyDetails
+@inject NavigationManager navigation
+
+<EditForm Model="@Property" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator/>
+    <ValidationSummary />
+    <div class="form-group row">
+        <label for="title" class="col-md-3 col-form-label">Title :</label>
+        <div class="col-md-9">
+            <InputText @bind-Value="Property.Title" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="description" class="col-md-3 col-form-label">Description :</label>
+        <div class="col-md-9">
+            <InputText @bind-Value="Property.Description" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="location" class="col-md-3 col-form-label">Location :</label>
+        <div class="col-md-9">
+            <InputTextArea @bind-Value="Property.Location" class="form-control"></InputTextArea>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="price" class="col-md-3 col-form-label">Price :</label>
+        <div class="col-md-9">
+            <InputNumber @bind-Value="Property.Price" class="form-control"></InputNumber>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+
+</EditForm>
+@code {
+    [Parameter, EditorRequired]
+    public PropertyDTO Property { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<PropertyDTO> OnValidSubmit { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        if (Property != null)
+            await OnValidSubmit.InvokeAsync(Property);
+    }
+
+    private void OnCancel()
+    {
+        navigation.NavigateTo("/propertyList");
+    }
+}

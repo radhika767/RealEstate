@@ -1,0 +1,11 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/RealEstate/Client/bin
+/RealEstate/Client/obj
+/RealEstate/Server/bin
+/RealEstate/Server/obj
+/RealEstate/Shared/bin
+/RealEstate/Shared/obj
+/.vs

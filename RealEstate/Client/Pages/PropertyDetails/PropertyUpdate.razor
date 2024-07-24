@@ -1,0 +1,51 @@
+﻿@page "/propertyedit/{id:int}"
+@using RealEstate.Client.Component
+@using RealEstate.Shared.DTO.PropertyDetails
+@inject HttpClient httpClient
+@inject NavigationManager navigation
+@inject IJSRuntime JS
+<h3>Update Property</h3>
+
+<PropertyForm Property="@prop" OnValidSubmit="UpdateProperty"/>
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3">
+        @errorMessage
+    </div>
+}
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private PropertyDTO prop = new PropertyDTO();
+
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        prop = await httpClient.GetFromJsonAsync<PropertyDTO>($"api/Property/GetById?id={Id}") ?? new();
+    }
+
+    private async void UpdateProperty()
+    {
+        try
+        {
+            var response = await httpClient.PutAsJsonAsync($"api/Property/Update", prop);
+            if (response.IsSuccessStatusCode)
+            {
+                await JS.InvokeVoidAsync("alert", "Property Update Successfully.");
+                Console.WriteLine("Property Update Successfully.");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Failed to update property");
+                Console.WriteLine("Property Update Failed.");
+            }
+            navigation.NavigateTo("/propertyList");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error Edit Property: {ex.Message}";
+        }
+    }
+}

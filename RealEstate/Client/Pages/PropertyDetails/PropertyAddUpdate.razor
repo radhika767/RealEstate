@@ -1,0 +1,94 @@
+﻿@page "/propertyAddUpdate/{id:int?}"
+@using Microsoft.AspNetCore.Components.Forms
+@using RealEstate.Server.Model.PropertyDetails
+@inject HttpClient httpClient
+@inject NavigationManager navigation
+@inject IJSRuntime JS
+<h3>@(Id == 0 ? "Add Property" : "Update Property")</h3>
+
+<EditForm Model="@prop" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group row">
+        <label for="title" class="col-md-3 col-form-label">Title :</label>
+        <div class="col-md-9">
+            <InputText @bind-Value="prop.Title" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="description" class="col-md-3 col-form-label">Description :</label>
+        <div class="col-md-9">
+            <InputText @bind-Value="prop.Description" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="location" class="col-md-3 col-form-label">Location :</label>
+        <div class="col-md-9">
+            <InputTextArea @bind-Value="prop.Location" class="form-control"></InputTextArea>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="price" class="col-md-3 col-form-label">Price :</label>
+        <div class="col-md-9">
+            <input type="text" id="price" @bind="prop.Price" class="form-control" />
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">@((Id == 0) ? "Add" : "Update")</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger mt-3">
+            @errorMessage
+        </div>
+    }
+</EditForm>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int? Id { get; set; }
+
+    private Property prop = new Property();
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue && Id.Value != 0)
+        {
+            prop = await httpClient.GetFromJsonAsync<Property>($"api/Property/GetById?id={Id}");
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            HttpResponseMessage response;
+
+            if (Id.HasValue && Id.Value != 0)
+            {
+                // Update existing property
+                prop.Id = Id.Value;
+                response = await httpClient.PutAsJsonAsync("api/Property/Update", prop);
+            }
+            else
+            {
+                // Add new property
+                response = await httpClient.PostAsJsonAsync("api/Property/Add", prop);
+            }
+
+            response.EnsureSuccessStatusCode();
+            await JS.InvokeVoidAsync("alert", Id.HasValue ? "Property Updated Successfully." : "Property Added Successfully.");
+            Console.WriteLine(Id.HasValue ? "Property Updated Successfully." : "Property Added Successfully.");
+            navigation.NavigateTo("/propertyList");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    private void Cancel()
+    {
+        navigation.NavigateTo("/propertyList");
+    }
+}

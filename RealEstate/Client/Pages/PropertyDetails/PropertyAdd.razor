@@ -1,0 +1,42 @@
+﻿@page "/propertyadd"
+@using RealEstate.Client.Component
+@using RealEstate.Shared.DTO.PropertyDetails
+@inject HttpClient httpClient
+@inject NavigationManager navigation
+@inject IJSRuntime JS
+<h3>Add Property</h3>
+
+<PropertyForm Property="@prop" OnValidSubmit="AddProperty" />
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3">
+        @errorMessage
+    </div>
+}
+@code {
+    private PropertyDTO prop = new PropertyDTO();
+    private string? errorMessage;
+    private async Task AddProperty()
+    {
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync("api/Property/Add", prop) ?? new();
+            if (response.IsSuccessStatusCode)
+            {
+                await JS.InvokeVoidAsync("alert", "Property Added Successfully.");
+                Console.WriteLine("Property Added Successfully."); 
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Failed to add property.");
+                Console.WriteLine("Property Added Failed.");
+            }
+            navigation.NavigateTo("/propertyList");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error adding property: {ex.Message}";
+        }
+    }
+}
